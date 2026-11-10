@@ -1,0 +1,6 @@
+scikit-learn==1.9.1
+xgboost==3.4.1
+fairlearn==0.15.0
+pandas
+numpy
+matplotlib
