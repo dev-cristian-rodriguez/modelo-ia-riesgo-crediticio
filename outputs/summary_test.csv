@@ -1,0 +1,6 @@
+modelo,accuracy,precision,recall,f1,auc,DI_edad,DPD_edad,EOD_edad,DI_sexo,EOD_sexo
+M0 Logística (base),0.725,0.532,0.683,0.599,0.755,0.67,0.214,0.188,0.949,0.042
+M1 XGBoost,0.735,0.581,0.417,0.485,0.696,0.973,0.022,0.02,0.977,0.058
+M2 XGBoost sin sensibles,0.675,0.462,0.5,0.48,0.696,0.986,0.01,0.032,0.918,0.09
+M3 XGBoost + Reweighing,0.685,0.475,0.467,0.471,0.685,0.992,0.006,0.062,0.98,0.153
+M4 XGBoost + ThresholdOpt (EO),0.685,0.471,0.4,0.432,,0.919,0.065,0.188,0.983,0.042
