@@ -229,17 +229,17 @@ def main():
     systems = {}
     # M0: línea base logística (con atributos sensibles)
     m0 = pipe(LogisticRegression(C=best_lr[1], max_iter=2000, random_state=seed), num_all, cat_all)
-    m0.fit(tr[cols_all], ytr); systems["M0 Logística (base)"] = (m0, cols_all)
+    m0.fit(tr[cols_all], ytr); systems["M0 Modelo simple"] = (m0, cols_all)
     # M1: XGBoost afinado (con atributos sensibles)
     m1 = pipe(make_xgb(best_params), num_all, cat_all)
-    m1.fit(tr[cols_all], ytr); systems["M1 XGBoost"] = (m1, cols_all)
+    m1.fit(tr[cols_all], ytr); systems["M1 Modelo avanzado"] = (m1, cols_all)
     # M2: XGBoost sin atributos sensibles (fairness through unawareness)
     m2 = pipe(make_xgb(best_params), num_ns, cat_ns)
-    m2.fit(tr[cols_ns], ytr); systems["M2 XGBoost sin sensibles"] = (m2, cols_ns)
+    m2.fit(tr[cols_ns], ytr); systems["M2 Sin edad ni sexo"] = (m2, cols_ns)
     # M3: XGBoost con Reweighing sobre edad
     w = reweighing_weights(ytr, tr.age_group.values)
     m3 = pipe(make_xgb(best_params), num_all, cat_all)
-    m3.fit(tr[cols_all], ytr, clf__sample_weight=w); systems["M3 XGBoost + Reweighing"] = (m3, cols_all)
+    m3.fit(tr[cols_all], ytr, clf__sample_weight=w); systems["M3 Pesos por grupo"] = (m3, cols_all)
 
     # ---------- Evaluación Train / Val / Test ----------
     results, preds_test, probas_test, thresholds = {}, {}, {}, {}
@@ -258,7 +258,7 @@ def main():
     to = ThresholdOptimizer(estimator=Float64Proba(m1), constraints="equalized_odds", objective="balanced_accuracy_score",
                             prefit=True, predict_method="predict_proba")
     to.fit(va[cols_all], yva, sensitive_features=va.age_group)
-    name4 = "M4 XGBoost + ThresholdOpt (EO)"
+    name4 = "M4 Umbral por grupo"
     rs = np.random.RandomState(seed)
     pred4 = to.predict(te[cols_all], sensitive_features=te.age_group, random_state=rs).astype(int)
     preds_test[name4] = pred4
@@ -303,7 +303,7 @@ def main():
     # ---------- Figuras ----------
     # (1) ROC
     plt.figure(figsize=(5.5, 4.5))
-    for name in ["M0 Logística (base)", "M1 XGBoost", "M2 XGBoost sin sensibles", "M3 XGBoost + Reweighing"]:
+    for name in ["M0 Modelo simple", "M1 Modelo avanzado", "M2 Sin edad ni sexo", "M3 Pesos por grupo"]:
         fpr, tpr, _ = roc_curve(yte, probas_test[name])
         plt.plot(fpr, tpr, label=f"{name} (AUC={roc_auc_score(yte, probas_test[name]):.3f})")
     plt.plot([0, 1], [0, 1], "k--", lw=.8); plt.xlabel("Tasa de falsos positivos"); plt.ylabel("Tasa de verdaderos positivos")
@@ -311,7 +311,7 @@ def main():
     plt.savefig(out / "fig1_roc.png", dpi=200); plt.close()
 
     # (2) Matriz de confusión del modelo M1
-    cm = confusion_matrix(yte, preds_test["M1 XGBoost"])
+    cm = confusion_matrix(yte, preds_test["M1 Modelo avanzado"])
     fig, ax = plt.subplots(figsize=(4.2, 3.8)); ax.imshow(cm, cmap="Blues")
     for (i, j), v in np.ndenumerate(cm):
         ax.text(j, i, v, ha="center", va="center", fontsize=14, color="white" if v > cm.max() / 2 else "black")
@@ -327,7 +327,7 @@ def main():
         x = np.arange(len(names)); wdt = .38
         for k, g in enumerate(groups):
             ax.bar(x + (k - .5) * wdt, [fairness[n]["age_group"]["by_group"][g][metric] for n in names], wdt, label=g)
-        ax.set_xticks(x, [n.split(" ")[0] for n in names]); ax.set_title(title); ax.set_ylim(0, 1)
+        ax.set_xticks(x, [n.split(" ", 1)[1] for n in names], rotation=30, ha="right", fontsize=7); ax.set_title(title); ax.set_ylim(0, 1)
     axes[0].legend(fontsize=8); plt.tight_layout(); plt.savefig(out / "fig3_fairness_age.png", dpi=200); plt.close()
 
     # (4) Trade-off desempeño vs. equidad
@@ -335,8 +335,9 @@ def main():
     for name in names:
         r = results[name]["test"]
         plt.scatter(fairness[name]["age_group"]["equalized_odds_diff"], r["balanced_acc"], s=70)
-        plt.annotate(name.split(" ")[0], (fairness[name]["age_group"]["equalized_odds_diff"], r["balanced_acc"]),
-                     textcoords="offset points", xytext=(5, 4), fontsize=9)
+        dx, dy, ha = {"M0": (-8, 6, "right"), "M3": (6, -13, "left"), "M4": (-8, 8, "right")}.get(name.split(" ")[0], (6, 5, "left"))
+        plt.annotate(name, (fairness[name]["age_group"]["equalized_odds_diff"], r["balanced_acc"]),
+                     textcoords="offset points", xytext=(dx, dy), ha=ha, fontsize=9)
     plt.xlabel("Diferencia de Equalized Odds por edad (menor = más equitativo)"); plt.ylabel("Balanced accuracy (test)")
     plt.title("Compromiso desempeño-equidad"); plt.tight_layout(); plt.savefig(out / "fig4_tradeoff.png", dpi=200); plt.close()
 

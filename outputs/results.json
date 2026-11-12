@@ -56,7 +56,7 @@
   "best_lr_C": 0.3,
   "n_trials": 60,
   "results": {
-    "M0 Logística (base)": {
+    "M0 Modelo simple": {
       "threshold": 0.31999999999999995,
       "train": {
         "accuracy": 0.7666666666666667,
@@ -95,7 +95,7 @@
         "tp": 41
       }
     },
-    "M1 XGBoost": {
+    "M1 Modelo avanzado": {
       "threshold": 0.5599999999999999,
       "train": {
         "accuracy": 0.96,
@@ -134,7 +134,7 @@
         "tp": 25
       }
     },
-    "M2 XGBoost sin sensibles": {
+    "M2 Sin edad ni sexo": {
       "threshold": 0.38999999999999996,
       "train": {
         "accuracy": 0.9533333333333334,
@@ -173,7 +173,7 @@
         "tp": 30
       }
     },
-    "M3 XGBoost + Reweighing": {
+    "M3 Pesos por grupo": {
       "threshold": 0.43999999999999995,
       "train": {
         "accuracy": 0.9716666666666667,
@@ -212,7 +212,7 @@
         "tp": 28
       }
     },
-    "M4 XGBoost + ThresholdOpt (EO)": {
+    "M4 Umbral por grupo": {
       "threshold": null,
       "test": {
         "accuracy": 0.685,
@@ -229,7 +229,7 @@
     }
   },
   "fairness": {
-    "M0 Logística (base)": {
+    "M0 Modelo simple": {
       "age_group": {
         "by_group": {
           "adult(>=25)": {
@@ -277,7 +277,7 @@
         "fpr_gap": 0.018713450292397654
       }
     },
-    "M1 XGBoost": {
+    "M1 Modelo avanzado": {
       "age_group": {
         "by_group": {
           "adult(>=25)": {
@@ -325,7 +325,7 @@
         "fpr_gap": 0.05847953216374267
       }
     },
-    "M2 XGBoost sin sensibles": {
+    "M2 Sin edad ni sexo": {
       "age_group": {
         "by_group": {
           "adult(>=25)": {
@@ -373,7 +373,7 @@
         "fpr_gap": 0.09005847953216375
       }
     },
-    "M3 XGBoost + Reweighing": {
+    "M3 Pesos por grupo": {
       "age_group": {
         "by_group": {
           "adult(>=25)": {
@@ -421,7 +421,7 @@
         "fpr_gap": 0.06666666666666665
       }
     },
-    "M4 XGBoost + ThresholdOpt (EO)": {
+    "M4 Umbral por grupo": {
       "age_group": {
         "by_group": {
           "adult(>=25)": {
